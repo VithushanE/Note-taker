@@ -3,7 +3,7 @@ const express = require('express')
 const fs = require('fs') // need to install fs because we will be using a file system
 const app= express()
 
-const PORT = 8000
+const PORT = 400
 
 
 // Step 2: get the apps ready
@@ -18,19 +18,18 @@ app.use(express.json())
 
 
 //Step 3: Now, we will be collecting the data from users and parsing the data in a JSON format 
-const getNotes =JSON.parse(fs.readFileSync('notetaker.json'))
-
+const notesData =JSON.parse(fs.readFileSync('db/db.json'))
+console.log(notesData)
 
 //Step 4: we need the get, post and delete methods for the notes
 //1.) getting information shown on front page
-app.get('/api/public/notes', function(req,res){
+app.get('/api/notes', function(req,res){
+    let notesData = JSON.parse(fs.readFileSync('db/db.json'))
     console.log('getting files ')
 
     //always define where the date will be retrived 
-    const notesData = getNotes
-   
     if (notesData) {
-        res.send({notesData})
+        res.send(notesData)
     }
 })
 
@@ -39,7 +38,6 @@ let counter = 1
 app.post('/api/notes', function(req,res){
     console.log('posting notes on page', req.body)
 
-    let notesData= getNotes
 
     if (notesData.length>0){
         counter= (parseInt(notesData[notesData.length-1].id)+1)
@@ -47,20 +45,23 @@ app.post('/api/notes', function(req,res){
     else {
         counter=1
     }
+
+    let notesData= JSON.parse(fs.readFileSync('db/db.json'))
     notesData.push({id:`${counter}`, title: `${req.body.title}`, text: `${req.body.text}`})
-    fs.writeFileSync('notesData', JSON.stringify(notesData))    
+    
+
+    fs.writeFileSync('db/db.json', JSON.stringify(notesData))    
 
     counter++
-    req.location.reload()
 })
 
 
 
 app.delete('api/notes/:id', function(req,res){
     console.log('deleting entries')
-    let notesData = getNotess
+
 notesData = notesData.filter(entry => !(entry.id== req.params.id));
-fs.writeFileSync('notetaker.json', JSON.stringify(notesData));
+fs.writeFileSync('db/db.json', JSON.stringify(notesData));
 res.end();
 
 
