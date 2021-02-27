@@ -3,7 +3,7 @@ const express = require('express')
 const fs = require('fs') // need to install fs because we will be using a file system
 const app= express()
 
-const PORT = 400
+const PORT = 200
 
 
 // Step 2: get the apps ready
@@ -38,7 +38,7 @@ let counter = 1
 app.post('/api/notes', function(req,res){
     console.log('posting notes on page', req.body)
 
-
+    let notesData = JSON.parse(fs.readFileSync('db/db.json'))
     if (notesData.length>0){
         counter= (parseInt(notesData[notesData.length-1].id)+1)
     }
@@ -46,7 +46,6 @@ app.post('/api/notes', function(req,res){
         counter=1
     }
 
-    let notesData= JSON.parse(fs.readFileSync('db/db.json'))
     notesData.push({id:`${counter}`, title: `${req.body.title}`, text: `${req.body.text}`})
     
 
@@ -57,15 +56,13 @@ app.post('/api/notes', function(req,res){
 
 
 
-app.delete('api/notes/:id', function(req,res){
-    console.log('deleting entries')
-
-notesData = notesData.filter(entry => !(entry.id== req.params.id));
-fs.writeFileSync('db/db.json', JSON.stringify(notesData));
-res.end();
-
-
-})
+app.delete('/api/notes/:id', (req, res) => {
+    console.log('deleting from page',`id:${req.params.id}`)
+    let data = JSON.parse(fs.readFileSync('db/db.json'));
+    data = data.filter(entry => !(entry.id == req.params.id));
+    fs.writeFileSync('db/db.json', JSON.stringify(data));
+    res.end();
+});
 
 app.listen(PORT, function(){
 
